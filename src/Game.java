@@ -6,20 +6,22 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 // Runnableを持つクラスだけがスレッドで使える
-public class Build extends JFrame implements Runnable {
+public class Game extends JFrame implements Runnable {
 
-	private Graphics g;
 	private MyScene scene;
 	private int fps = 60;
 	private Image screen;
+	private String title = "タイトル未設定";
+	private Graphics graphics;
 
 	// 以下は後にインターフェースへ移動
 	private static final int G_WIDTH = 100, G_HEIGHT = 100;
 	private static final MyKey KEY_LISTENER = new MyKey();
 
-	Build(String title) {
+	Game(String title) {
 		// このフレームのタイトルを設定する
-		setTitle(title);
+		this.title = title;
+		setTitle(this.title);
 		// ×ボタンが押された時の挙動を設定する
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		// このフレーム(ウィンドウ)がリサイズ可能か設定する
@@ -57,40 +59,62 @@ public class Build extends JFrame implements Runnable {
 
 	}
 
-	Build setFps(int fps) {
+	Game setFps(int fps) {
 		this.fps = fps;
 		return this;
 	}
 
-	Build start() {
+	Game start() {
 		// sceneがヌルならStage1を表示する
 		if (scene == null) {
 			scene = Stage1.STAGE1;
 		}
-		new Thread(this);
+		setVisible(true);
+		new Thread(this).start();
 		return this;
 	}
 
 	@Override
 	public void run() {
-		// 現在の時刻をミリ秒単位で得る
-		long processTime = System.currentTimeMillis();
 
-		// ここがスレッド内で実際にさせたい処理
-		scene.sceneDraw();
-		scene.sceneUpdate();
+		Graphics g = screen.getGraphics();
+		this.graphics = g;
+		int tick = 0;
+		int tickPose = 0;
 
-		// この処理にかかった時間が設定したFPS内で終わったか否か
-		if (System.currentTimeMillis() - processTime <= 1000 / fps) {
-			try {
-				// 処理をいったん停止し、次の処理が始まる時間となるまで停止させる
-				Thread.sleep(1000 / fps - processTime);
-			} catch (Exception e) {
-				e.printStackTrace();
+		while (true) {
+			// 現在の時刻をミリ秒単位で得る
+			long processTime = System.currentTimeMillis();
+
+
+
+
+			// ここがスレッド内で実際にさせたい処理
+			scene.sceneDraw(g, tick);
+
+			// updateを実行させつつ返り値であるシーンが切り替わっているか確認
+			MyScene newScene = scene.sceneUpdate(tick);
+			// シーンが切り替わっていれば自分のsceneに代入して実行するsceneを切り替える
+			if(scene != newScene){
+				scene = newScene;
 			}
-		} else {
-			// FPSよりも処理が長くなった場合は意図しない挙動になるのでコンソールでエラーを通知
-			System.out.println("ERRO -> 処理落ち");
+
+
+
+
+			// この処理にかかった時間が設定したFPS内で終わったか否か
+			processTime = System.currentTimeMillis() - processTime;
+			if (processTime <= 1000 / fps) {
+				try {
+					// 処理をいったん停止し、次の処理が始まる時間となるまで停止させる
+					Thread.sleep(1000 / fps - processTime);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			} else {
+				// FPSよりも処理が長くなった場合は意図しない挙動になるのでコンソールでエラーを通知
+				System.out.println("ERROR -> 処理落ち");
+			}
 		}
 	}
 

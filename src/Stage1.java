@@ -11,13 +11,12 @@ public class Stage1 extends MyScene {
 
 	@Override
 	void draw(Graphics g, int tick) {
-		// TODO 自動生成されたメソッド・スタブ
-
+		System.out.println("draw");
 	}
 
 	@Override
 	MyScene update(int tick) {
-		// TODO 自動生成されたメソッド・スタブ
+		System.out.println("update");
 		return this;
 	}
 
