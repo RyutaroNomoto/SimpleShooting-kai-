@@ -1,3 +1,4 @@
+package simpleshooting_kai_;
 import java.awt.Graphics;
 
 public class Stage1 extends MyScene {

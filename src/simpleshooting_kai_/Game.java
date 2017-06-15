@@ -1,3 +1,6 @@
+package simpleshooting_kai_;
+
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -14,10 +17,6 @@ public class Game extends JFrame implements Runnable {
 	private String title = "タイトル未設定";
 	private Graphics graphics;
 
-	// 以下は後にインターフェースへ移動
-	private static final int G_WIDTH = 100, G_HEIGHT = 100;
-	private static final MyKey KEY_LISTENER = new MyKey();
-
 	Game(String title) {
 		// このフレームのタイトルを設定する
 		this.title = title;
@@ -27,7 +26,7 @@ public class Game extends JFrame implements Runnable {
 		// このフレーム(ウィンドウ)がリサイズ可能か設定する
 		setResizable(false);
 		// このJFrameのコンテント部分(メインとなる部品)を参照し、サイズの設定を行う
-		getContentPane().setPreferredSize(new Dimension(G_WIDTH, G_HEIGHT));
+		getContentPane().setPreferredSize(new Dimension(MyInterface.G_WIDTH, MyInterface.G_HEIGHT));
 		// 上記で指定したサイズはウィンドウのヘッダー部分等も含む値だが
 		// それらを含まないようにしてリサイズするメソッド
 		pack();
@@ -49,13 +48,13 @@ public class Game extends JFrame implements Runnable {
 		};
 
 		// キー入力を検知するクラスのインスタンスをパネルに組み込む
-		panel.addKeyListener(KEY_LISTENER);
+		panel.addKeyListener(MyInterface.KEY_LISTENER);
 		// 準備ができたら最後にpanelを可視化させるようにするメソッド
 		panel.setFocusable(true);
 		// このJFrameにpanelをaddすることでcontentpaneに張り付ける
 		add(panel);
 
-		screen = createImage(G_WIDTH, G_HEIGHT);
+		screen = createImage(MyInterface.G_WIDTH, MyInterface.G_HEIGHT);
 
 	}
 
@@ -74,33 +73,36 @@ public class Game extends JFrame implements Runnable {
 		return this;
 	}
 
+	public static void main(String[] args) {
+		Game g = new Game("タイトル");
+		g.start().setFps(60).setTitle("サンプル");
+	}
+
 	@Override
 	public void run() {
 
-		Graphics g = screen.getGraphics();
-		this.graphics = g;
+		Graphics gCanvas = screen.getGraphics();
+		this.graphics = gCanvas;
 		int tick = 0;
-		int tickPose = 0;
+		int tickPause = 0;
 
 		while (true) {
 			// 現在の時刻をミリ秒単位で得る
 			long processTime = System.currentTimeMillis();
 
-
-
-
-			// ここがスレッド内で実際にさせたい処理
-			scene.sceneDraw(g, tick);
+			// ここがスレッド内で実際にさせたいメイン処理
+			gCanvas.setColor(Color.BLUE);
+			gCanvas.fillRect(0, 0, MyInterface.G_WIDTH, MyInterface.G_HEIGHT);
+			gCanvas.drawImage(screen, 0, 0, this);
+			repaint();
+			scene.sceneDraw(gCanvas, tick);
 
 			// updateを実行させつつ返り値であるシーンが切り替わっているか確認
 			MyScene newScene = scene.sceneUpdate(tick);
 			// シーンが切り替わっていれば自分のsceneに代入して実行するsceneを切り替える
-			if(scene != newScene){
+			if (scene != newScene) {
 				scene = newScene;
 			}
-
-
-
 
 			// この処理にかかった時間が設定したFPS内で終わったか否か
 			processTime = System.currentTimeMillis() - processTime;

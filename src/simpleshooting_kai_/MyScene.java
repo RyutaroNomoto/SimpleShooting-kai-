@@ -1,3 +1,4 @@
+package simpleshooting_kai_;
 import java.awt.Graphics;
 
 // MyScene型は少なくともupdateとdrawメソッドは定義しなければならない
